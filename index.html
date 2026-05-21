@@ -12929,6 +12929,58 @@ async function miaCargar() {
       pfRadonCargar(pExp.seccion)
     ]);
 
+    /* Resolver nombres de unidad, seccion y puesto antes de pfPoblarVista
+       porque pfPoblarVista los lee del selectedIndex del select oculto */
+    if (pExp.unidad) {
+      var selU = document.getElementById('pf-unidad-cat');
+      if (selU && !selU.querySelector('option[value="' + pExp.unidad + '"]')) {
+        try {
+          var uRec = await pbGet('/api/collections/catalogo_unidades/records/' + pExp.unidad);
+          var uOpt = document.createElement('option');
+          uOpt.value = pExp.unidad; uOpt.textContent = uRec.nombre || pExp.unidad;
+          selU.appendChild(uOpt);
+        } catch(e) {}
+      }
+      if (selU) selU.value = pExp.unidad;
+    }
+    if (pExp.seccion) {
+      var selSec = document.getElementById('pf-seccion');
+      if (selSec && !selSec.querySelector('option[value="' + pExp.seccion + '"]')) {
+        var secCached = (pfSeccionesCache || []).find(function(s){ return s.id === pExp.seccion; });
+        if (!secCached) {
+          try {
+            var sRec = await pbGet('/api/collections/secciones/records/' + pExp.seccion);
+            var sOpt = document.createElement('option');
+            sOpt.value = pExp.seccion; sOpt.textContent = sRec.nombre || pExp.seccion;
+            selSec.appendChild(sOpt);
+          } catch(e) {}
+        }
+      }
+      if (selSec) selSec.value = pExp.seccion;
+    }
+    if (pExp.puesto) {
+      var selPT = document.getElementById('pf-puesto');
+      if (selPT && !selPT.querySelector('option[value="' + pExp.puesto + '"]')) {
+        var ptCached = (pfPuestosCache || []).find(function(pt){ return pt.id === pExp.puesto; });
+        if (!ptCached) {
+          try {
+            var ptRec = await pbGet('/api/collections/puestos_trabajo/records/' + pExp.puesto);
+            var ptOpt = document.createElement('option');
+            ptOpt.value = pExp.puesto;
+            ptOpt.textContent = (ptRec.codigo ? ptRec.codigo + ' — ' : '') + (ptRec.denominacion || pExp.puesto);
+            selPT.appendChild(ptOpt);
+            /* Guardar puesto_civil en expand para pfPoblarVista */
+            if (!pExp.expand) pExp.expand = {};
+            if (!pExp.expand.puesto) pExp.expand.puesto = ptRec;
+          } catch(e) {}
+        } else {
+          if (!pExp.expand) pExp.expand = {};
+          if (!pExp.expand.puesto) pExp.expand.puesto = ptCached;
+        }
+      }
+      if (selPT) selPT.value = pExp.puesto;
+    }
+
     pfPoblarVista(pExp);
     await miaCargarAnexos(p.id);
 
