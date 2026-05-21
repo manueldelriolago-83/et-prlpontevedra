@@ -12880,11 +12880,17 @@ async function miaCargar() {
       if (sigWrap) sigWrap.style.display = 'none';
     }
 
-    /* Cargar datos usando funciones existentes */
+    /* Cargar datos — para empleado no usamos pfCargarMaestras (filtra por unidad admin) */
     pfEditId = p.id;
-    await pfCargarMaestras();
-    /* Usar el registro ya obtenido — evita 404 por expand con rol empleado */
     var pExp = p;
+
+    /* Cargar solo lo necesario para la vista */
+    try {
+      var rPT  = await pbGet('/api/collections/puestos_trabajo/records?perPage=500&sort=codigo');
+      var rSec = await pbGet('/api/collections/secciones/records?perPage=200&sort=nombre');
+      pfPuestosCache   = rPT.items  || [];
+      pfSeccionesCache = rSec.items || [];
+    } catch(eM) { pfPuestosCache = pfPuestosCache || []; pfSeccionesCache = pfSeccionesCache || []; }
     document.getElementById('pf-apellidos').value       = pExp.apellidos || '';
     document.getElementById('pf-nombre').value          = pExp.nombre    || '';
     document.getElementById('pf-empleo').value          = pExp.empleo    || '';
