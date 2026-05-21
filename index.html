@@ -12883,7 +12883,8 @@ async function miaCargar() {
     /* Cargar datos usando funciones existentes */
     pfEditId = p.id;
     await pfCargarMaestras();
-    var pExp = await pbGet('/api/collections/personal/records/' + p.id + '?expand=puesto,unidad');
+    /* Usar el registro ya obtenido — evita 404 por expand con rol empleado */
+    var pExp = p;
     document.getElementById('pf-apellidos').value       = pExp.apellidos || '';
     document.getElementById('pf-nombre').value          = pExp.nombre    || '';
     document.getElementById('pf-empleo').value          = pExp.empleo    || '';
